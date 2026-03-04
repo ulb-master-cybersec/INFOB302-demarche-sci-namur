@@ -92,7 +92,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Scopus with query ``continuous integration'' AND ``configuration'' AND ``anti-pattern'' AND ``Travis CI''.
-    \item \textbf{Justification:} this landmark study analyzes CI configuration feature usage and misuse across 9,312 open-source Travis CI projects. It identifies four anti-patterns in CI specification files and reveals that 48\% of configuration code is devoted to job environment setup. The paper proposes Gretel, a tool to detect CI configuration anti-patterns at scale, directly addressing configuration management challenges in complex pipelines.
+    \item \textbf{Justification:} This landmark research examines the usage and misuse of CI configuration feature usage in 9,312 open-source Travis CI projects. It finds four anti-patterns in CI specification files, including 48\% of configuration code used for job environment setup. It also proposes the tool Gretel, which detects anti-patterns in CI configurations, thus addressing the issue of configuration management.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Timoth\'{e} Piscaglia.
 \end{itemize}
 
@@ -101,7 +101,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Scopus with query ``continuous delivery'' AND ``configuration smells'' AND ``pipeline'' AND ``linter''.
-    \item \textbf{Justification:} this paper proposes CD-Linter, a semantic linter that detects four types of configuration smells in pipeline YAML files. Evaluated on 5,312 open-source GitLab projects over six months, it achieves 87\% precision and 94\% recall. The study is central to the question of pipeline configuration maintainability in complex CI/CD environments.
+    \item \textbf{Justification:} CD-Linter, a semantic linter, is presented in this paper, which identifies four types of configuration smells in pipeline YAML files. The evaluation is done using 5,312 open-source GitLab projects, and the results show 87\% precision and 94\% recall in six months. This research is significant in addressing the problem of pipeline configuration maintainability in complex CI/CD pipelines.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Timoth\'{e} Piscaglia.
 \end{itemize}
 
@@ -110,7 +110,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Scopus with query ``CI/CD pipeline'' AND ``evolution'' AND ``restructuring''.
-    \item \textbf{Justification:} this paper combines qualitative analysis of 615 pipeline configuration change commits with quantitative analysis of 253,492 commits from 4,644 Travis CI projects. It produces a taxonomy of 34 CI/CD pipeline restructuring actions and 16 evolution metrics, directly characterizing how pipeline components evolve and accumulate technical debt over time.
+    \item \textbf{Justification:} This paper presents a combination of qualitative analysis of 615 commits related to pipeline configuration change and quantitative analysis of 253,492 commits from 4,644 Travis CI projects. The paper provides a taxonomy of 34 CI/CD pipeline restructuring operations and 16 evolution metrics, which directly characterize changes in pipeline component evolution and technical debt accumulation.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Timoth\'{e} Piscaglia.
 \end{itemize}
 
@@ -119,7 +119,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Scopus with query ``continuous integration'' AND ``bad practices'' AND ``empirical''.
-    \item \textbf{Justification:} this study empirically investigates bad practices in CI through developer interviews, Stack Overflow analysis, and online surveys. It compiles a comprehensive catalog of 79 CI bad smells across 7 categories, providing the most extensive taxonomy of maintenance-related anti-patterns in CI configurations. This is directly relevant to understanding what makes CI pipelines complex and error-prone.
+    \item \textbf{Justification:} In this study, bad practices in CI are empirically examined through interviews with developers, analysis of Stack Overflow, and online surveys. It presents a comprehensive collection of 79 bad smells in CI, grouped into 7 categories, which is the most exhaustive taxonomy of bad practices in CI configurations that are relevant to maintenance. This is important in understanding what makes CI pipelines complex and error-prone.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Timoth\'{e} Piscaglia.
 \end{itemize}
 
@@ -128,7 +128,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Google Scholar with query ``GitHub Actions'' AND ``workflow'' AND ``continuous integration'' AND ``empirical study''.
-    \item \textbf{Justification:} this is the first study investigating how developers design and use GitHub Actions YAML-based workflow files to automate CI/CD pipelines. It categorizes actions by purpose (CI, deployment, code quality) and examines how pipeline-as-code configurations are structured in practice, offering direct insight into modern CI workflow design patterns.
+    \item \textbf{Justification:} This is the first research on the way developers use and create GitHub Actions YAML-based workflow files. It classifies actions based on their purpose, such as CI, deployment, and code quality, and explores the way pipeline-as-code configurations are structured, providing an "inside look" at modern-day CI workflow design.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Pierre-Louis Lef\`{e}vre.
 \end{itemize}
 
@@ -137,7 +137,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Scopus with query ``architecting'' AND ``continuous delivery'' AND ``deployment'' AND ``empirical''.
-    \item \textbf{Justification:} this paper presents a conceptual framework for (re-)architecting software systems to support CD pipelines, based on 21 practitioner interviews and a 91-respondent survey. It directly addresses how software architecture decisions shape pipeline design, including deployment unit granularity and service decomposition, which are key concerns when designing complex CI pipelines.
+    \item \textbf{Justification:} in this paper, we propose a conceptual framework for (re-)architecting software systems in support of CD pipelines, based on 21 practitioner interviews and a survey of 91 respondents. It directly addresses the role of software architecture in CD pipelines, including deployment unit granularity and service decomposition, which are critical considerations in designing complex CI pipelines.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Pierre-Louis Lef\`{e}vre.
 \end{itemize}
 
@@ -146,7 +146,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Google Scholar with query ``code review'' AND ``build system'' AND ``specifications'' AND ``continuous integration''.
-    \item \textbf{Justification:} this is the first empirical study of code review practices for build system specifications (pipeline-as-code). Analyzing 502,931 change sets from Qt and Eclipse, it finds that build specs are reviewed two times less frequently than production code, yet review comments more often identify defects. This is directly relevant to assessing the design quality of complex pipeline specifications.
+    \item \textbf{Justification:} This is the first empirical study on code review practices of build system specifications (pipeline-as-code). It analyzed 502,931 change sets from Qt and Eclipse and found that build specs are reviewed twice less frequently than production code, but review comments are more likely to identify defects. This is directly relevant to the assessment of design quality of complex pipeline specifications.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Pierre-Louis Lef\`{e}vre.
 \end{itemize}
 
@@ -155,7 +155,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Scopus with query ``continuous integration'' AND ``anti-patterns'' AND ``decay'' AND ``automated''.
-    \item \textbf{Justification:} this paper proposes CI-Odor, an automated tool detecting four key CI anti-patterns (Slow Build, Broken Release, Late Merging, Missing Build Failure Repair) by analyzing build logs and repository data. It demonstrates that automated detection can identify CI pipeline decay early, directly targeting the maintenance dimension of complex CI pipelines.
+    \item \textbf{Justification:} This paper introduces a new tool, called CI-Odor, for automatically identifying four major anti-patterns of CI, namely Slow Build, Broken Release, Late Merging, and Missing Build Failure Repair, based on build log information and repository information. It illustrates the feasibility of using an automated approach for identifying the degradation of CI pipelines, targeting one of the complexity dimensions of CI.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Pierre-Louis Lef\`{e}vre.
 \end{itemize}
 
@@ -164,7 +164,7 @@ This document includes a list of published \textbf{peer-reviewed} research paper
 %
 \begin{itemize}
     \item \textbf{Found:} using Google Scholar with query ``continuous integration'' AND ``operational data'' AND ``CircleCI'' AND ``case study''.
-    \item \textbf{Justification:} this large-scale empirical study uses eight years of operational data from CircleCI, a major CI service provider. It examines CI service scalability challenges, configuration patterns, and usage trends across thousands of projects, providing a unique service-provider perspective on how CI pipelines scale and operate in production environments.
+    \item \textbf{Justification:} In this large-scale empirical study, we utilize eight years of operational data from CircleCI, one of the largest CI service providers. We study the challenges, configurations, and trends in CI service scalability based on thousands of projects, offering a service provider’s point of view on the operation and scaling of CI pipelines in production.
     \item \textbf{Cross-validation:} found by Brice Delcroix, confirmed by Pierre-Louis Lef\`{e}vre.
 \end{itemize}
 
