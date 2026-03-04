@@ -1,0 +1,71 @@
+\documentclass[a4paper,11pt,oneside]{article}
+
+
+%%%% Packages: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% \usepackage[english]{babel} 
+\usepackage[english]{babel} 
+
+\usepackage{cite}
+
+\usepackage{geometry}
+\geometry{textwidth=16cm,textheight=26cm}
+
+%%%% Preamble: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{D2. Bibliography : <Temporary title>}
+
+\author{
+    <First name> <Last name>
+    \and <First name> <Last name>
+    \and <First name> <Last name>}
+    
+\date{
+    <Group X>, INFOB302 - IDS (20<XX> - 20<XX>)
+}
+    
+%%%% Document: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\maketitle
+
+% ---------------------------------------
+\section{Search criteria}
+% ---------------------------------------
+
+This document includes a list of published \textbf{peer-reviewed} research papers collected following a search in bibliographic engines or via \textit{snowballing}. The search queries used are:
+%
+\begin{itemize}
+    \item \textbf{Scopus:} test case generation
+    \item \textbf{Google Scholar:} test case generation (benchmarking OR comparison)
+    \item [...]
+\end{itemize}
+
+% ---------------------------------------
+\section{List of papers}
+% ---------------------------------------
+
+\subsection{JUGE: An Infrastructure for Benchmarking Java Unit Test Generators \cite{Devroey2021}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using a search engine/snowballing from paper  \cite{...}.
+    \item \textbf{Justification:} the paper discusses the implementation of a protocol for quantitative evaluations of test case generators. It presents a benchmark evaluation tool and reports past evaluations at the SBST tool competition. (give a 2-3 sentences description)
+    \item \textbf{Cross-validation:} found by ... confirmed/rejected by ... (give a reason in case of reject). 
+\end{itemize}
+
+
+\subsection{ Paper 2 ... }
+
+\subsection{...}
+
+\subsection{ Paper 30 ... }
+
+% Do not forget to add the publications to the bib file to get the full reference.
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}
