@@ -1,0 +1,22 @@
+# LaTeX build files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+
+# PDF output
+*.pdf
+
+# Editor/System files
+.DS_Store
+Thumbs.db
