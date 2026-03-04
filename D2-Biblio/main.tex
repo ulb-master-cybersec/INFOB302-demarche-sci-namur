@@ -59,6 +59,15 @@ This document includes a list of published \textbf{peer-reviewed} research paper
     \item \textbf{IEEE Xplore:} ``Continuous Integration Pipeline'' AND ``Architectural Issues''
     \item \textbf{Google Scholar:} ``CI/CD Pipeline Optimization'' ``Systematic Mapping''
     \item \textbf{Google Scholar:} ``Method for Continuous Integration and Deployment Using a Pipeline Generator''
+    %% Pierre-Louis Lef\`{e}vre
+    \item \textbf{Google Scholar:} ``continuous integration'' AND ``usage'' AND ``benefits'' AND ``open-source'' AND ``empirical''
+    \item \textbf{Scopus:} ``continuous integration'' AND ``impact'' AND ``software development'' AND ``practices'' AND ``empirical''
+    \item \textbf{Scopus:} ``continuous integration'' AND ``build failures'' AND ``empirical'' AND ``Java'' AND ``open-source''
+    \item \textbf{Google Scholar:} ``Travis CI'' AND ``build breakage'' AND ``test failures'' AND ``GitHub'' AND ``explorative analysis''
+    \item \textbf{Google Scholar:} ``continuous integration'' AND ``service migration'' AND ``Travis'' AND ``abandonment'' AND ``empirical''
+    \item \textbf{Scopus:} ``continuous delivery'' AND ``adoption'' AND ``problems'' AND ``challenges'' AND ``systematic literature review''
+    \item \textbf{Google Scholar:} ``continuous integration'' AND ``impact'' AND ``code review'' AND ``pull request'' AND ``empirical''
+    \item \textbf{Google Scholar:} ``continuous deployment'' AND ``practices'' AND ``industry'' AND ``qualitative'' AND ``case study''
 \end{itemize}
 
 % ---------------------------------------
@@ -296,6 +305,100 @@ This document includes a list of published \textbf{peer-reviewed} research paper
     \item \textbf{Found:} via backward snowballing from Dutta et al. (2025) \cite{Dutta2025}.
     \item \textbf{Justification:} discusses the optimization of highly complex automated testing environments using advanced methods. Very relevant for accelerating feedback loops in large CI pipelines.
     \item \textbf{Cross-validation:} found by Timoth\'{e} Piscaglia, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% =======================================
+\subsection*{\textit{Papers found by Pierre-Louis Lef\`{e}vre}}
+% =======================================
+
+% ---- Paper 26 ----
+\subsection{Usage, Costs, and Benefits of Continuous Integration in Open-Source Projects \cite{Hilton2016}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using Google Scholar with query ``continuous integration'' AND ``usage'' AND ``benefits'' AND ``open-source'' AND ``empirical''.
+    \item \textbf{Justification:} this large-scale empirical study surveys 34,544 open-source projects on GitHub to measure the actual usage of CI systems (primarily Travis CI), the cost in terms of build minutes, and the benefits in terms of reduced merge conflicts and faster pull-request resolution. It provides foundational quantitative evidence that CI adoption is widespread and beneficial, grounding the discussion of why complex pipelines are worth investing in.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 27 ----
+\subsection{The Impact of Continuous Integration on Other Software Development Practices: A Large-Scale Empirical Study \cite{Zhao2017}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using Scopus with query ``continuous integration'' AND ``impact'' AND ``software development'' AND ``practices'' AND ``empirical''.
+    \item \textbf{Justification:} using regression discontinuity design on hundreds of GitHub projects that adopted Travis CI, this study measures how CI uptake causally shifts code writing, pull-request closing, and testing practices. It demonstrates that CI is not an isolated tool choice but reshapes the surrounding development workflow, which is directly relevant to understanding the systemic effects of pipeline design decisions.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 28 ----
+\subsection{An Empirical Analysis of Build Failures in the Continuous Integration Workflows of Java-Based Open-Source Software \cite{Rausch2017}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using Scopus with query ``continuous integration'' AND ``build failures'' AND ``empirical'' AND ``Java'' AND ``open-source''.
+    \item \textbf{Justification:} this paper analyses 4,021 Travis CI builds across 30 Java projects, categorising root causes of build failures into compilation errors, test failures, and environment issues. Understanding the distribution of failure causes is essential for designing resilient pipeline stages and for justifying automated failure-detection mechanisms in complex pipelines.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 29 ----
+\subsection{Oops, My Tests Broke the Build: An Explorative Analysis of Travis CI with GitHub \cite{Beller2017}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using Google Scholar with query ``Travis CI'' AND ``build breakage'' AND ``test failures'' AND ``GitHub'' AND ``explorative analysis''.
+    \item \textbf{Justification:} by linking Travis CI build logs with GitHub event streams, this study shows that most build breaks are caused by test failures rather than compilation errors, and that developers take significantly longer to fix failing builds overnight. These findings directly inform pipeline scheduling and notification design in complex CI environments.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 30 ----
+\subsection{I'm Leaving You, Travis: A Continuous Integration Breakup Story \cite{Widder2018}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using Google Scholar with query ``continuous integration'' AND ``service migration'' AND ``Travis'' AND ``abandonment'' AND ``empirical''.
+    \item \textbf{Justification:} by analysing 1,819 open-source GitHub projects that migrated away from Travis CI, this paper identifies build duration and programming language as significant predictors of abandonment. The findings are directly relevant to understanding the long-term maintainability and vendor lock-in risks inherent in complex pipeline configurations, and motivate the need for portable, tool-agnostic pipeline design.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 31 ----
+\subsection{A Tale of CI Build Failures: An Open Source and Financial Sector Analysis \cite{Vassallo2017}}
+%
+\begin{itemize}
+    \item \textbf{Found:} via snowballing -- cited by Vassallo et al.~\cite{Vassallo2019} (Automated Reporting of Anti-Patterns and Decay in CI).
+    \item \textbf{Justification:} comparing CI build failure patterns across 14 open-source projects and one large financial-sector system, this paper identifies domain-specific failure categories and shows that fixing strategies differ markedly between industrial and open-source contexts. This cross-sector perspective enriches the understanding of how pipeline complexity manifests differently depending on organisational constraints.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 32 ----
+\subsection{How Open Source Projects Use Static Code Analysis Tools in Continuous Integration Pipelines \cite{Zampetti2017}}
+%
+\begin{itemize}
+    \item \textbf{Found:} via snowballing -- cited by Zampetti et al.~\cite{Zampetti2021} (CI/CD Pipelines Evolution and Restructuring).
+    \item \textbf{Justification:} analysing 20 popular open-source Java projects, this paper catalogues which static analysis tools are integrated into CI pipelines, how their configurations evolve, and how developers react to tool warnings. It provides concrete insight into how quality gates are embedded in complex pipelines and the governance challenges this creates.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 33 ----
+\subsection{Problems, Causes and Solutions When Adopting Continuous Delivery---A Systematic Literature Review \cite{Laukkanen2017}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using Scopus with query ``continuous delivery'' AND ``adoption'' AND ``problems'' AND ``challenges'' AND ``systematic literature review''.
+    \item \textbf{Justification:} synthesising 30 primary studies, this systematic literature review catalogues 26 recurring problems (e.g., environment configuration, test suite maintainability, deployment automation gaps) along with their causes and proposed solutions. It provides a structured taxonomy of obstacles that directly arise when designing and scaling complex CI/CD pipelines in practice.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 34 ----
+\subsection{The Silent Helper: The Impact of Continuous Integration on Code Reviews \cite{Cassee2020}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using Google Scholar with query ``continuous integration'' AND ``impact'' AND ``code review'' AND ``pull request'' AND ``empirical''.
+    \item \textbf{Justification:} by analysing 685 GitHub projects that adopted Travis CI, this paper shows that CI significantly reduces review discussion volume --- saving on average one review comment per pull request --- while the number of code changes per review stays roughly constant. These findings are relevant to understanding how pipeline feedback loops interact with human review processes in complex development workflows.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
+\end{itemize}
+
+% ---- Paper 35 ----
+\subsection{The Highways and Country Roads to Continuous Deployment \cite{Leppanen2015}}
+%
+\begin{itemize}
+    \item \textbf{Found:} using Google Scholar with query ``continuous deployment'' AND ``practices'' AND ``industry'' AND ``qualitative'' AND ``case study''.
+    \item \textbf{Justification:} drawing on a multi-case qualitative study of Finnish software companies at different stages of deployment pipeline maturity, this paper characterises the incremental architectural and organisational steps required to reach full continuous deployment. It provides a maturity-oriented view of pipeline complexity that complements the configuration-focused analyses in the rest of the bibliography.
+    \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`{e}vre, confirmed/rejected by \ldots{}
 \end{itemize}
 
 % Do not forget to add the publications to the bib file to get the full reference.
