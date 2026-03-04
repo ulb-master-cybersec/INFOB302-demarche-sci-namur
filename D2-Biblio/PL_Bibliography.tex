@@ -1,0 +1,194 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{parskip}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue
+}
+
+\title{\textbf{D2. Bibliography: Design of Complex CI Pipelines}\\[0.4em]
+\large Papers found by Pierre-Louis Lef\`evre}
+\author{Brice Delcroix \and Timoth\'e Piscaglia \and Pierre-Louis Lef\`evre\\[0.3em]
+\small Vint Cerf, INFOB302 -- IDS (2025--2026)}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent This section adds 10 peer-reviewed research papers collected by Pierre-Louis Lef\`evre,
+continuing the numbering from Section~2.25. Search queries and snowballing sources are
+indicated for each entry. Cross-validation fields are left open for team completion.
+
+\bigskip
+\hrule
+\bigskip
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.26\quad Usage, Costs, and Benefits of Continuous Integration in Open-Source Projects~\cite{hilton2016usage}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} using Google Scholar with query \textit{continuous integration usage benefits open-source empirical}.
+  \item \textbf{Justification:} This large-scale empirical study surveys 34,544 open-source projects on GitHub to measure the actual usage of CI systems (primarily Travis~CI), the cost in terms of build minutes, and the benefits in terms of reduced merge conflicts and faster pull-request resolution. It provides foundational quantitative evidence that CI adoption is widespread and beneficial, grounding the discussion of why complex pipelines are worth investing in.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.27\quad The Impact of Continuous Integration on Other Software Development Practices: A Large-Scale Empirical Study~\cite{zhao2017impact}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} using Scopus with query \textit{continuous integration AND impact AND software development AND practices AND empirical}.
+  \item \textbf{Justification:} Using regression discontinuity design on hundreds of GitHub projects that adopted Travis~CI, this study measures how CI uptake causally shifts code writing, pull-request closing, and testing practices. It demonstrates that CI is not an isolated tool choice but reshapes the surrounding development workflow, which is directly relevant to understanding the systemic effects of pipeline design decisions.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.28\quad An Empirical Analysis of Build Failures in the Continuous Integration Workflows of Java-Based Open-Source Software~\cite{rausch2017empirical}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} using Scopus with query \textit{continuous integration AND build failures AND empirical AND Java AND open-source}.
+  \item \textbf{Justification:} This paper analyses 4,021 Travis~CI builds across 30 Java projects, categorising root causes of build failures into compilation errors, test failures, and environment issues. Understanding the distribution of failure causes is essential for designing resilient pipeline stages and for justifying automated failure-detection mechanisms in complex pipelines.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.29\quad Oops, My Tests Broke the Build: An Explorative Analysis of Travis CI with GitHub~\cite{beller2017oops}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} using Google Scholar with query \textit{Travis CI build breakage test failures GitHub explorative analysis}.
+  \item \textbf{Justification:} By linking Travis~CI build logs with GitHub event streams, this study shows that most build breaks are caused by test failures rather than compilation errors, and that developers take significantly longer to fix failing builds overnight. These findings directly inform pipeline scheduling and notification design in complex CI environments.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.30\quad I'm Leaving You, Travis: A Continuous Integration Breakup Story~\cite{widder2018leaving}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} using Google Scholar with query \textit{continuous integration service migration Travis abandonment empirical}.
+  \item \textbf{Justification:} By analysing 1,819 open-source GitHub projects that migrated away from Travis~CI, this paper identifies build duration and programming language as significant predictors of abandonment. The findings are directly relevant to understanding the long-term maintainability and vendor lock-in risks inherent in complex pipeline configurations, and motivate the need for portable, tool-agnostic pipeline design.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.31\quad A Tale of CI Build Failures: An Open Source and Financial Sector Analysis~\cite{vassallo2017tale}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} via snowballing --- cited by Vassallo et al.~\cite{vassallo2019automated} (Automated Reporting of Anti-Patterns and Decay in~CI).
+  \item \textbf{Justification:} Comparing CI build failure patterns across 14 open-source projects and one large financial-sector system, this paper identifies domain-specific failure categories and shows that fixing strategies differ markedly between industrial and open-source contexts. This cross-sector perspective enriches the understanding of how pipeline complexity manifests differently depending on organisational constraints.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.32\quad How Open Source Projects Use Static Code Analysis Tools in Continuous Integration Pipelines~\cite{zampetti2017static}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} via snowballing --- cited by Zampetti et al.~\cite{zampetti2021cicd} (CI/CD Pipelines Evolution and Restructuring).
+  \item \textbf{Justification:} Analysing 20 popular open-source Java projects, this paper catalogues which static analysis tools are integrated into CI pipelines, how their configurations evolve, and how developers react to tool warnings. It provides concrete insight into how quality gates are embedded in complex pipelines and the governance challenges this creates.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.33\quad Problems, Causes and Solutions When Adopting Continuous Delivery---A Systematic Literature Review~\cite{laukkanen2017problems}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} using Scopus with query \textit{continuous delivery AND adoption AND problems AND challenges AND systematic literature review}.
+  \item \textbf{Justification:} Synthesising 30 primary studies, this systematic literature review catalogues 26 recurring problems (e.g., environment configuration, test suite maintainability, deployment automation gaps) along with their causes and proposed solutions. It provides a structured taxonomy of obstacles that directly arise when designing and scaling complex CI/CD pipelines in practice.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.34\quad The Silent Helper: The Impact of Continuous Integration on Code Reviews~\cite{cassee2020silent}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} using Google Scholar with query \textit{continuous integration impact code review pull request empirical}.
+  \item \textbf{Justification:} By analysing 685 GitHub projects that adopted Travis~CI, this paper shows that CI significantly reduces review discussion volume --- saving on average one review comment per pull request --- while the number of code changes per review stays roughly constant. These findings are relevant to understanding how pipeline feedback loops interact with human review processes in complex development workflows.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection*{2.35\quad The Highways and Country Roads to Continuous Deployment~\cite{leppanen2015highways}}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Found:} using Google Scholar with query \textit{continuous deployment practices industry qualitative case study}.
+  \item \textbf{Justification:} Drawing on a multi-case qualitative study of Finnish software companies at different stages of deployment pipeline maturity, this paper characterises the incremental architectural and organisational steps required to reach full continuous deployment. It provides a maturity-oriented view of pipeline complexity that complements the configuration-focused analyses in the rest of the bibliography.
+  \item \textbf{Cross-validation:} found by Pierre-Louis Lef\`evre, confirmed/rejected by~\ldots
+\end{itemize}
+
+\bigskip
+\hrule
+\bigskip
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{thebibliography}{99}
+
+\bibitem{hilton2016usage}
+Michael Hilton, Timothy Tunnell, Kai Huang, Darko Marinov, and Danny Dig.
+\newblock Usage, costs, and benefits of continuous integration in open-source projects.
+\newblock In \emph{Proceedings of the 31st IEEE/ACM International Conference on Automated Software Engineering (ASE)}, pages 426--437. ACM, 2016.
+
+\bibitem{zhao2017impact}
+Yangyang Zhao, Alexander Serebrenik, Yuming Zhou, Vladimir Filkov, and Bogdan Vasilescu.
+\newblock The impact of continuous integration on other software development practices: A large-scale empirical study.
+\newblock In \emph{Proceedings of the 32nd IEEE/ACM International Conference on Automated Software Engineering (ASE)}, pages 60--71. IEEE, 2017.
+
+\bibitem{rausch2017empirical}
+Thomas Rausch, Waldemar Hummer, Philipp Leitner, and Stefan Schulte.
+\newblock An empirical analysis of build failures in the continuous integration workflows of Java-based open-source software.
+\newblock In \emph{Proceedings of the 14th International Conference on Mining Software Repositories (MSR)}, pages 345--355. IEEE, 2017.
+
+\bibitem{beller2017oops}
+Moritz Beller, Georgios Gousios, and Andy Zaidman.
+\newblock Oops, my tests broke the build: An explorative analysis of Travis~CI with GitHub.
+\newblock In \emph{Proceedings of the 14th International Conference on Mining Software Repositories (MSR)}, pages 356--367. IEEE, 2017.
+
+\bibitem{widder2018leaving}
+David Widder, Bogdan Vasilescu, Michael Hilton, and Christian K\"{a}stner.
+\newblock I'm leaving you, Travis: A continuous integration breakup story.
+\newblock In \emph{Proceedings of the 15th International Conference on Mining Software Repositories (MSR)}, pages 165--169. IEEE, 2018.
+
+\bibitem{vassallo2017tale}
+Carmine Vassallo, Gerald Schermann, Fiorella Zampetti, Daniele Romano, Philipp Leitner, Andy Zaidman, Massimiliano Di~Penta, and Sebastiano Panichella.
+\newblock A tale of CI build failures: An open source and financial sector analysis.
+\newblock In \emph{Proceedings of the 33rd IEEE International Conference on Software Maintenance and Evolution (ICSME)}, pages 183--193. IEEE, 2017.
+
+\bibitem{zampetti2017static}
+Fiorella Zampetti, Simone Scalabrino, Rocco Oliveto, Gerardo Canfora, and Massimiliano Di~Penta.
+\newblock How open source projects use static code analysis tools in continuous integration pipelines.
+\newblock In \emph{Proceedings of the 14th International Conference on Mining Software Repositories (MSR)}, pages 334--344. IEEE, 2017.
+
+\bibitem{laukkanen2017problems}
+Marko Laukkanen, Juha Itkonen, and Casper Lassenius.
+\newblock Problems, causes and solutions when adopting continuous delivery: A systematic literature review.
+\newblock \emph{Information and Software Technology}, 82:55--79, 2017.
+
+\bibitem{cassee2020silent}
+Nathan Cassee, Bogdan Vasilescu, and Alexander Serebrenik.
+\newblock The silent helper: The impact of continuous integration on code reviews.
+\newblock In \emph{Proceedings of the 27th IEEE International Conference on Software Analysis, Evolution and Reengineering (SANER)}, pages 423--434. IEEE, 2020.
+
+\bibitem{leppanen2015highways}
+Marko Lepp\"{a}nen, Simo M\"{a}kinen, Max Pagels, Veli-Pekka Eloranta, Juha Itkonen, Mika~V.\ M\"{a}ntyl\"{a}, and Tomi Mannisto.
+\newblock The highways and country roads to continuous deployment.
+\newblock \emph{IEEE Software}, 32(2):64--72, 2015.
+
+% ── References from the original document (cited via snowballing) ──
+\bibitem{vassallo2019automated}
+Carmine Vassallo, Sebastian Proksch, Harald~C.\ Gall, and Massimiliano Di~Penta.
+\newblock Automated reporting of anti-patterns and decay in continuous integration.
+\newblock In \emph{Proceedings of the 41st IEEE/ACM International Conference on Software Engineering (ICSE)}, pages 105--115. IEEE, 2019.
+
+\bibitem{zampetti2021cicd}
+Fiorella Zampetti, Salvatore Geremia, Gabriele Bavota, and Massimiliano Di~Penta.
+\newblock CI/CD pipelines evolution and restructuring: A qualitative and quantitative study.
+\newblock In \emph{Proceedings of the 37th IEEE International Conference on Software Maintenance and Evolution (ICSME)}, pages 471--482. IEEE, 2021.
+
+\end{thebibliography}
+
+\end{document}
