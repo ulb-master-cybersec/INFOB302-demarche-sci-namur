@@ -15,17 +15,18 @@
 
 %%%% Preamble: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\title{D3. Scope and research question: <Title>
+\title{D3. Scope and research question: Design of Complex CI Pipelines
 }
 
 \author{
-    <First name> <Last name>
-    \and <First name> <Last name>
-    \and <First name> <Last name>}
+    Brice Delcroix
+    \and Timoth\'{e} Piscaglia
+    \and Pierre-Louis Lef\`{e}vre}
     
 \date{
-    <Group X>, INFOB302 - IDS (20<XX> - 20<XX>)
+    Vint Cerf, INFOB302 - IDS (2025 - 2026)
 }
+    
     
 %%%% Document: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -36,52 +37,92 @@
 % ---------------------------------------
 \section{Introduction}
 % ---------------------------------------
+Continuous Integration (CI) is one of the most important practices of modern software development, where developers frequently integrate their code changes into a shared code base. This practice ensures automated builds and tests~\cite{Shahin2017}. Software projects are becoming larger and more complex, and as a result, the CI pipelines supporting them are becoming more complex. These pipelines have many stages, varied execution environments, and complex configuration files~\cite{Fitzgerald2017}. Inefficiently designed or configured pipelines can result in slow feedback, build failures, and high maintenance costs. These inefficiencies can negate the benefits of Continuous Integration~\cite{Hilton2016}.
+\vspace{0.3cm}
 
-Introduce the topic of your research. Explain the motivation for this research and the problem that you want to solve. This should be done in a way that is understandable for a non-expert (meaning a reader without domain knowledge) reader. Do not forget to add adequate citations if you are using information from another source.
+Despite the widespread adoption of CI in both open source and industrial software development projects, there is still a lack of understanding about the configuration practices and anti-patterns that define good and poor quality CI pipelines. Several empirical research works have identified common anti-patterns in CI pipelines, such as configuration smells~\cite{Vassallo2020}, anti-patterns in specification files~\cite{Gallaba2020}, and architectural anti-patterns~\cite{Zampetti2019}; however, these results have been scattered across different CI tools (Travis CI, GitLab CI, GitHub Actions) and have not been integrated to provide a single point of view on CI pipeline quality.
+\vspace{0.3cm}
 
-In particular, do not forget to explain the following elements:
-the scope: Give the scope of your research. State its general objective and the topics addressed and not addressed by this research; The objectives: State the specific objectives of your research. Explain the gain that is expected in terms of empirical and theoretical knowledge.
+\textbf{Scope.} This research is specifically about the design, architecture, and configuration management of complex CI pipelines in open-source software projects. It deals with the structure of pipeline configurations, quality issues that may arise, and how automated detection tools already handle these quality issues. The research does not deal with continuous deployment (CD) aspects that are beyond the scope of continuous integration (CI), nor human factors that may arise (e.g., team adoption barriers) that are beyond the scope of pipeline configurations.
+\vspace{0.3cm}
 
+\textbf{Objectives.} The specific objectives of this research can be stated as follows. First and foremost, this research hopes to achieve the goal of identifying the most prevalent configuration anti-patterns and smells that are common within complex CI pipelines. Secondly, this research hopes to achieve the goal of evaluating the extent to which current automated tools are capable of identifying the anti-patterns and smells identified. Finally, this research hopes to achieve the goal of identifying the gaps and ways of improving the automated assessment of the quality of CI pipeline designs. The benefits of this research are expected to be both empirical and theoretical.
 % ---------------------------------------
 \section{Background}
 % ---------------------------------------
 
-Explain the different elements required to understand what your research is about. This section may contain several subsections (one per element). Do not forget to add adequate citations.
+This section introduces the key concepts required to understand the scope of the research.
 
-\subsection{Element 1}
+\subsection{Continuous Integration Pipelines}
 
+Continuous Integration is the practice of automatically building and testing software each time a developer pushes changes to a version control repository~\cite{Shahin2017}. A Continuous Integration pipeline refers to a set of automated procedures used in Continuous Integration, which usually includes steps for dependency management, compilation, testing, analysis, and generation of artifacts, among others. Modern tools for Continuous Integration, which include Travis CI, GitLab CI/CD, GitHub Actions, and CircleCI, use declarative configuration files, which are usually in YAML or other formats (e.g., \texttt{.travis.yml}, \texttt{.gitlab-ci.yml}, or GitHub Actions YAML workflows)~\cite{Kinsman2021, Gallaba2022}.
 
-\subsection{Element 2}
+\vspace{0.3cm}
+
+As projects scale, these configuration files grow in complexity: they may involve matrix builds across multiple language versions and operating systems, conditional job execution, caching strategies, and integration with external services. St\aa{}hl and Bosch~\cite{Stahl2014} proposed a descriptive model capturing the key variation points in CI practices --- such as integration scope, trigger mechanisms, and build frequency --- which provides a useful vocabulary for reasoning about pipeline design diversity across industrial contexts.
+
+\subsection{Configuration as Code}
+
+The principle of "Configuration as Code" (CaC) is the management of the definitions of the CI pipeline using text files under source control with the same emphasis as source code for production~\cite{Layman2022}. This approach guarantees the reproducibility, auditability, and collaborative reviewability of the configurations. Nevertheless, the study by Nejati et al.~\cite{Nejati2023} indicated that the build system specifications are reviewed much less frequently than the production code, only half the frequency, yet the comments on the review of the build system configurations were more likely to point to defects. This disparity implies that the configurations for the pipelines are considered second-class citizens.
+
+\subsection{Configuration Anti-Patterns and Smells}
+
+By analogy with code smells in traditional software engineering, \emph{configuration smells} refer to suboptimal patterns in pipeline configuration files that may indicate deeper design problems. Gallaba and McIntosh~\cite{Gallaba2020} identified four categories of anti-patterns in Travis CI specifications, finding that nearly half of configuration code is devoted to environment setup rather than the core build-and-test logic. Vassallo et al.~\cite{Vassallo2020} defined four types of configuration smells in GitLab CD pipelines and implemented CD-Linter, a semantic linter achieving 87\% precision and 94\% recall over 5,312 projects. In a complementary effort, Viggiato et al.~\cite{Viggiato2019} compiled a comprehensive taxonomy of 79 bad practices in CI, grouped into seven categories, based on developer interviews, Stack Overflow analysis, and surveys. These studies collectively show that configuration quality issues are pervasive and diverse.
+
+\subsection{Automated Detection Tools}
+
+A number of tools have been proposed to automatically detect quality issues within CI configurations. The Gretel tool, proposed by Gallaba and McIntosh, can automatically detect anti-patterns within Travis CI configuration files~\cite{Gallaba2020}. The CI-Odor tool, proposed by Vassallo et al., can automatically detect process-level anti-patterns such as Slow Build, Broken Release, Late Merging, and Missing Build Failure Repair by mining build logs and repository metadata~\cite{Vassallo2019}. The CD-Linter tool targets configuration smells within GitLab pipeline YAML files~\cite{Vassallo2020}. Although the tools have shown promising results on their respective target platforms, it is unclear how well the tools' detection capabilities generalize across CI systems and whether important categories of design issues remain unaddressed.
 
 % ---------------------------------------
 \section{Related work}
 % ---------------------------------------
 
-Explain how your research is related to the state of the art. This should be done by comparing your research to the most relevant related work. This comparison should be done in terms of the research question(s) and the research method(s) used. 
-In particular, specify if your research is relying on a similar approach for a different problem; addressing the same problem using a different approach; addressing the same problem using the same approach but with a different goal; or addressing the same problem using the same approach with the same goal. 
+Our research is located at the intersection of empirical research on the quality of CI configuration and automated tool-based research on pipeline design. We compare our research with the most relevant research in the area with respect to research questions and methods used.
+\vspace{0.3cm}
 
-Do not forget to add adequate citations.
+\textbf{Same problem, complementary approaches.} Several studies have investigated configuration quality issues in CI pipelines, but each has focused on a single platform. Gallaba and McIntosh~\cite{Gallaba2020} studied anti-patterns exclusively in Travis CI, while Vassallo et al.~\cite{Vassallo2020} targeted GitLab CI/CD. Kinsman et al.~\cite{Kinsman2021} provided the first empirical characterisation of GitHub Actions workflows but did not specifically analyse configuration quality. Our research differs by adopting a cross-platform perspective, comparing anti-pattern prevalence across Travis CI, GitLab CI, and GitHub Actions to identify platform-specific versus universal design issues.
+\vspace{0.3cm}
+
+\textbf{Same problem, same approach, different goal.} Zampetti et al.~\cite{Zampetti2021} conducted both qualitative and quantitative analyses of pipeline evolution, producing a taxonomy of 34 restructuring operations. Their goal was to understand \emph{how} pipelines change over time, whereas our goal is to evaluate \emph{how well existing tools detect} the quality issues that motivate such changes. Similarly, Rausch et al.~\cite{Rausch2017} and Vassallo et al.~\cite{Vassallo2017} studied build failure causes in Java projects and across open-source vs.\ financial-sector contexts, respectively. These studies provide empirical evidence of the consequences of poor pipeline design but do not assess detection tooling, which is our central concern.
+\vspace{0.3cm}
+
+\textbf{Similar approach, broader problem.} Shahin et al.~\cite{Shahin2017} and Laukkanen et al.~\cite{Laukkanen2017} produced systematic literature reviews covering the full CI/CD landscape, including challenges, tools, and practices. Our research is narrower in scope --- focusing specifically on configuration-level quality --- but deeper in its evaluation of the automated tools available for detecting such issues. Shahin et al.~\cite{Shahin2019} further examined architectural decisions that support CD pipelines through practitioner interviews, which complements our configuration-centric analysis.
+\vspace{0.3cm}
+
+\textbf{Operational and evolutionary perspectives.} Gallaba et al.~\cite{Gallaba2022} analysed eight years of CircleCI operational data to study scalability trends, and Widder et al.~\cite{Widder2018} investigated why projects abandon Travis CI. These studies provide contextual evidence on the long-term consequences of pipeline design decisions (e.g., vendor lock-in, performance degradation) that motivate the need for early design-quality assessment --- the gap our research aims to address.
+
 
 % ---------------------------------------
 \section{Research question(s)}
 % ---------------------------------------
 
-Provide the main research question(s) that the research will answer.
+Based on the gaps identified in the state of the art, we formulate the following main research question:
 
 \begin{itemize}
-    \item \textbf{RQ.1} ...
+    \item \textbf{RQ} \emph{To what extent do existing automated tools detect configuration anti-patterns and smells in complex CI pipelines across different CI platforms?}
 \end{itemize}
 
-Provide an explanation and justification for each research question and subdivide it into sub-research-questions or hypothesis: 
+This question is motivated by the observation that current detection tools (Gretel~\cite{Gallaba2020}, CI-Odor~\cite{Vassallo2019}, CD-Linter~\cite{Vassallo2020}) have each been designed and evaluated for a single CI platform. It is unknown whether the anti-patterns they target are representative of the full spectrum of configuration quality issues, nor whether their detection capabilities transfer to other platforms. Answering this question contributes both a comparative evaluation of tool effectiveness and an identification of under-addressed quality concerns.
+
+We decompose the main research question into the following sub-research questions:
 
 \begin{itemize}
-    \item \textbf{RQ.1.1} ...
-    \item \textbf{RQ.1.2} ...
+    \item \textbf{RQ.1} \emph{What configuration anti-patterns and smells are most prevalent in CI pipelines across Travis CI, GitLab CI, and GitHub Actions?}
 \end{itemize}
 
-Provide an explanation and justification for each sub-research question. This should state how the sub-research question contributes to answering the global research-question and indications on how it will be answered. For instance, by providing a general description of the kind of research method and analysis that could be applied. 
+This sub-question aims to establish a cross-platform inventory of configuration quality issues. It extends the platform-specific catalogues of Gallaba and McIntosh~\cite{Gallaba2020} (Travis CI), Vassallo et al.~\cite{Vassallo2020} (GitLab), and Kinsman et al.~\cite{Kinsman2021} (GitHub Actions) by comparing prevalence rates across platforms. This can be answered through a mining-based empirical study analysing a large sample of open-source repositories from each platform, applying existing anti-pattern definitions and extending them where necessary. The expected outcome is a ranked list of anti-patterns by frequency and severity, stratified by platform.
 
-Do not forget to add adequate citations if you are using information from another source \cite{...}. For instance, it is required in a research question to compare your own work to the state of the art. This requires adequate citation of the original papers describing related approaches, research methods, etc.
+\begin{itemize}
+    \item \textbf{RQ.2} \emph{How do existing automated detection tools (Gretel, CI-Odor, CD-Linter) compare in terms of precision, recall, and coverage of the identified anti-patterns?}
+\end{itemize}
+
+This sub-question evaluates the detection capabilities of the three main tools proposed in the literature. While each tool has been individually validated~\cite{Gallaba2020, Vassallo2019, Vassallo2020}, no study has compared them side by side against a common benchmark. Answering this question requires constructing a manually labelled ground-truth dataset of pipeline configurations with known anti-patterns and measuring each tool's performance. The result will reveal which categories of issues are well-covered and which remain undetected.
+
+\begin{itemize}
+    \item \textbf{RQ.3} \emph{What categories of configuration quality issues in CI pipelines are not addressed by current automated detection tools?}
+\end{itemize}
+
+This sub-question identifies the gaps left by existing tooling. By comparing the cross-platform anti-pattern inventory from RQ.1 with the detection capabilities assessed in RQ.2, we can pinpoint the types of configuration problems that currently escape automated detection. This analysis draws on the comprehensive taxonomy of 79 bad practices compiled by Viggiato et al.~\cite{Viggiato2019} and the restructuring operations catalogued by Zampetti et al.~\cite{Zampetti2021} as reference points. The expected outcome is a prioritised list of unaddressed quality concerns that can guide future tool development.
 
 \bibliographystyle{plain}
 \bibliography{biblio}
