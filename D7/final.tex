@@ -116,10 +116,10 @@ in so far as more reliable CI pipelines directly translate to more reliable soft
 delivered to end-users.
 
 \paragraph{State-of-the-art positioning:}
-The existing literature has produced single-platform anti-pattern catalogues~\cite{gallaba2020, vassallo2020b, kinsman2021}
-and individual tool evaluations~\cite{gallaba2020, vassallo2019, vassallo2020b},
-but no study has performed a cross-platform comparison of anti-pattern prevalence
-or evaluated the three major detection tools side-by-side against a common benchmark.
+As detailed in Section~3, the existing literature has produced single-platform
+anti-pattern catalogues~\cite{gallaba2020, vassallo2020b, kinsman2021} and individual
+tool evaluations~\cite{gallaba2020, vassallo2019, vassallo2020b}, but no study has
+evaluated the three major detection tools side-by-side against a common benchmark.
 This research fills that gap by adopting a cross-platform, tool-comparative methodology.
 
 \paragraph{Research method overview:}
@@ -229,6 +229,28 @@ configuration quality. Our research differs from all three by adopting a cross-p
 perspective, comparing anti-pattern prevalence across Travis CI, GitLab CI, and GitHub
 Actions to identify platform-specific versus universal design issues. This cross-platform
 synthesis is the primary novelty of our contribution relative to this body of work.
+
+Table~\ref{tab:related} summarises how the most directly related studies compare to
+our work along the dimensions that define our novelty.
+
+\begin{table}[h]
+\centering
+\caption{Comparison of related studies on CI configuration quality.}
+\label{tab:related}
+\footnotesize
+\begin{tabular}{p{3.2cm}p{2.8cm}p{2.4cm}p{3.6cm}p{1.4cm}}
+\toprule
+\textbf{Study} & \textbf{Platform(s)} & \textbf{Anti-patterns} & \textbf{Tool evaluated} & \textbf{Cross-platform?} \\
+\midrule
+Gallaba \& McIntosh~\cite{gallaba2020}   & Travis CI         & 4 categories    & Gretel                    & No      \\
+Vassallo et al.~\cite{vassallo2020b}     & GitLab CI         & 4 smell types   & CD-Linter                 & No      \\
+Vassallo et al.~\cite{vassallo2019}      & Platform-agnostic & 4 process-level & CI-Odor                   & Partial \\
+Kinsman et al.~\cite{kinsman2021}        & GitHub Actions    & General workflows & None                    & No      \\
+Zampetti et al.~\cite{zampetti2020}      & Multiple (survey) & 79 practices    & None                      & Partial \\
+\textbf{This work}                       & \textbf{Travis, GitLab, GHA} & \textbf{79+ practices} & \textbf{Gretel, CI-Odor, CD-Linter} & \textbf{Yes} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Same Problem, Same Approach, Different Goal (Evolutionary Studies)}
 
@@ -375,6 +397,13 @@ stratum, we include all qualifying repositories. The sampling will use the GHTor
 dataset~\cite{gousios2013} as a starting point, supplemented by direct API queries
 for repositories created after the GHTorrent snapshot.
 
+To validate the automated filtering, two team members will independently inspect a
+random sample of 30 repositories drawn from the filtered results and confirm that each
+genuinely satisfies all inclusion criteria. Any repository for which the two reviewers
+disagree will be excluded by default. This manual check also serves to detect edge
+cases in which the presence of a CI configuration file does not reflect active use
+of that platform (e.g., disabled or empty workflows).
+
 \subsubsection{Data Extraction}
 
 For each repository, we will extract: (1) all CI configuration files, (2) the full
@@ -383,16 +412,41 @@ contributors, language, age, number of CI runs). Configuration files will be ext
 at three time points: January 2019, January 2022, and December 2024, capturing early,
 middle, and current pipeline designs.
 
+Before analysis, all extracted configuration files will undergo the following
+preprocessing steps. First, files that cannot be parsed as valid YAML will be
+flagged and excluded from the benchmarking sub-sample, though they will be counted
+in the dataset to avoid inflating quality metrics. Second, duplicate files ---
+defined as files with identical content appearing at multiple time points for the
+same repository --- will be deduplicated, retaining only the most recent version
+for the labelling step to avoid inflated anti-pattern counts. Third, all files will
+be normalised to UTF-8 encoding and Unix line endings prior to tool execution, to
+ensure consistent behaviour across the three detection tools. These steps will be
+fully scripted and included in the replication package (Section~5.5).
+
 \subsubsection{Manual Labelling (Ground Truth)}
 
 To evaluate tool performance (RQ.2), we will construct a ground-truth dataset by
 manually labelling a stratified sub-sample of 60 configuration files (20 per platform).
+This sample size is consistent with prior manual annotation studies in CI research:
+Vassallo et al.~\cite{vassallo2020b} manually validated a comparable set of files
+when evaluating CD-Linter, and Gallaba and McIntosh~\cite{gallaba2020} used similar
+manual inspection to validate Gretel's outputs. Given the exploratory nature of this
+benchmarking study, which prioritises cross-platform breadth over statistical depth,
+we acknowledge the limited size as a boundary condition and report effect sizes
+alongside all statistical tests to compensate for reduced power.
+
 Three team members will independently label each file using the anti-pattern catalogue
 of Gallaba and McIntosh~\cite{gallaba2020}, Vassallo et al.~\cite{vassallo2020b},
 and Zampetti et al.~\cite{zampetti2020} as reference. We acknowledge that the
-labellers are also the study designers, which introduces a potential confirmation bias;
-we mitigate this by using blind labelling and measuring inter-rater agreement. Each
-label records: anti-pattern type, location (line number), and severity
+labellers are also the study designers, which introduces a potential confirmation bias.
+We mitigate this through three complementary measures: (1) blind labelling, where
+each annotator works independently without knowledge of others' judgements; (2) the
+use of a structured binary checklist derived directly from the published anti-pattern
+definitions, reducing interpretive freedom to yes/no decisions per anti-pattern per
+line; and (3) an audit of a randomly drawn subset of ten files by a fourth reviewer
+not involved in the study design, whose agreement with the majority label will be
+reported as an additional reliability indicator.
+Each label records: anti-pattern type, location (line number), and severity
 (minor/moderate/severe). Inter-rater agreement will be measured using Cohen's Kappa;
 disagreements will be resolved by majority vote after discussion. We consider
 $\kappa \geq 0.70$ as acceptable agreement.
@@ -408,15 +462,22 @@ per file (mean occurrences per configuration file), and (3) platform distributio
 will report descriptive statistics (median, IQR, minimum, maximum) and use
 Mann--Whitney U tests (significance level $\alpha = 0.05$, Bonferroni-corrected for
 multiple comparisons) to assess whether prevalence rates differ significantly between
-platforms.
+platforms. Prior to applying these tests, we will verify that the two required
+assumptions hold: that the data are at least ordinal, and that observations are
+independent across platforms (satisfied by design, since each repository belongs to
+exactly one platform stratum).
 
 \subsection{Tool Benchmarking (RQ.2)}
 
 We will apply Gretel and CD-Linter to the ground-truth sub-sample for
 configuration-level detection. Since CI-Odor operates at the process level (mining
-build logs), it will be evaluated separately using build history data from the same
-repositories, and its results reported alongside but not directly compared on the same
-precision/recall metrics. For each tool, we will measure:
+build logs and repository metadata rather than analysing configuration files directly),
+it is fundamentally incommensurable with Gretel and CD-Linter on precision and recall
+metrics defined over configuration-file annotations. CI-Odor will therefore be
+evaluated separately using build history data from the same repositories, and its
+results presented in a dedicated subsection with qualitative discussion; they will
+\emph{not} be merged into the precision/recall/F1 comparison table used for Gretel
+and CD-Linter. For Gretel and CD-Linter, we will measure:
 
 \begin{itemize}
     \item \textbf{Precision:} proportion of tool-flagged instances that correspond to
@@ -463,11 +524,13 @@ Zenodo archive upon completion of the study, to ensure full replicability.
 \paragraph{Internal Validity.}
 Subjectivity in manual labelling is the primary internal threat. We mitigate this by
 using three independent raters and measuring inter-rater agreement with Cohen's Kappa,
-resolving disagreements through discussion. The use of pre-existing, well-defined
-anti-pattern catalogues~\cite{gallaba2020, vassallo2020b, zampetti2020} further
-reduces subjective interpretation. Another threat is the possible misapplication of a
-tool outside its intended platform; we mitigate this by applying each tool only to
-its target platform for performance measurement (Section~5.3).
+resolving disagreements through discussion. To further reduce confirmation bias
+arising from labellers also being study designers, we apply a structured binary
+checklist derived from published anti-pattern definitions~\cite{gallaba2020, vassallo2020b, zampetti2020}
+that limits interpretive freedom, and we include an audit by a fourth reviewer
+external to the study design (see Section~5.1.3). Another threat is the possible
+misapplication of a tool outside its intended platform; we mitigate this by applying
+each tool only to its target platform for performance measurement (Section~5.3).
 
 \paragraph{Construct Validity.}
 We operationalise ``anti-pattern prevalence'' as the percentage of repositories
@@ -694,4 +757,62 @@ pp.~233--236. IEEE, 2013.
 
 \end{thebibliography}
 
+% ──────────────────────────────────────────────────────────────
+\newpage
+\section*{Response to Peer Review}
+% ──────────────────────────────────────────────────────────────
+ 
+The table below summarises how the main remarks from reviews 96A, 96B, and 96C have
+been addressed in this revised version.
+ 
+\smallskip
+\noindent
+\footnotesize
+\begin{tabular}{p{0.22\textwidth}p{0.18\textwidth}p{0.52\textwidth}}
+\toprule
+\textbf{Remark} & \textbf{Source} & \textbf{Action taken} \\
+\midrule
+Validation of inclusion/exclusion criteria &
+96A, 96B &
+Added paragraph in \S5.1.1: two team members independently inspect 30 sampled repositories after automated filtering; disagreements lead to exclusion. \\
+\addlinespace
+Data preprocessing steps &
+96B &
+Added paragraph in \S5.1.2 detailing three steps: exclusion of unparseable YAML files, deduplication across time points, and UTF-8/Unix normalisation. \\
+\addlinespace
+Justification of sample size &
+96A, 96C &
+Added justification in \S5.1.3 comparing our 60-file sample to prior studies~\cite{gallaba2020,vassallo2020b}; limited power acknowledged as a boundary condition. \\
+\addlinespace
+Confirmation bias mitigation &
+96C &
+Strengthened \S5.1.3 with two additions: (1) structured binary checklist to limit interpretive freedom; (2) audit of 10 files by a fourth reviewer external to the study. \\
+\addlinespace
+CI-Odor comparability &
+96C &
+Clarified in \S5.3 that CI-Odor results are reported in a dedicated subsection and not merged into the precision/recall/F1 table used for Gretel and CD-Linter. \\
+\addlinespace
+Statistical test assumptions &
+96B &
+Added sentence in \S5.2 stating that both Mann--Whitney U assumptions (ordinal data; platform independence) will be verified before application. \\
+\addlinespace
+Summary table of related work &
+96A, 96C &
+Added Table~1 in \S3.1 comparing prior studies on platform coverage, anti-patterns, tool evaluated, and cross-platform scope. \\
+\addlinespace
+Repetition of novelty claim &
+96C &
+Trimmed the \emph{State-of-the-art positioning} paragraph in \S1; redundant restatements replaced by a forward reference to \S3. \\
+\bottomrule
+\end{tabular}
+ 
+\normalsize
+\smallskip
+\paragraph{Remarks not acted upon.}
+\emph{Adding a pipeline diagram (96C):} the structured subsections of \S5 already
+describe the protocol sequentially; a figure would duplicate rather than clarify.
+\emph{Course structure compliance (96A):} the current structure follows standard
+empirical software engineering registered report conventions, which we consider more
+appropriate for the scientific content; all required course elements remain present.
+ 
 \end{document}
