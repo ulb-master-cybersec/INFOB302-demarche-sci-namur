@@ -1,0 +1,784 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage[numbers,square,sort&compress]{natbib}
+
+\geometry{margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+\title{\textbf{Design of Complex CI Pipelines}\\[0.5em]
+\Large Registered Report}
+
+\author{
+    Brice Delcroix \and Timoth\'{e} Piscaglia \and Pierre-Louis Lef\`{e}vre\\[0.5em]
+    \small Vint Cerf, INFOB302 -- IDS (2025--2026)\\
+    \small Faculty of Computer Science, University of Namur, Belgium
+}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+% ──────────────────────────────────────────────────────────────
+\section{Introduction}
+% ──────────────────────────────────────────────────────────────
+
+Continuous Integration (CI) has become a cornerstone of modern software engineering.
+With platforms like GitHub Actions alone hosting millions of workflow definitions,
+the scale and complexity of CI configurations have grown considerably.
+By automatically building and testing code every time a developer commits changes
+to a shared repository, CI ensures rapid feedback on code quality and drastically
+reduces the cost of fixing defects~\cite{kinsman2021}.
+As software projects grow in size and complexity, the CI pipelines that support
+them inevitably grow as well. Today, pipelines may span multiple stages, multiple
+language versions and operating systems, complex caching strategies, and integrations
+with external quality-assurance services all encoded in declarative configuration
+files~\cite{beller2017, dutta2025}.
+
+Inefficiently designed or misconfigured pipelines can negate the very benefits that
+CI is supposed to bring: slow feedback loops, frequent build failures, and high
+maintenance burdens are well-documented consequences of poor pipeline design~\cite{dutta2025, hilton2016}.
+Despite the widespread adoption of CI in both open-source and industrial contexts,
+there is still no unified, cross-platform understanding of the configuration practices
+and anti-patterns that characterise good versus poor CI pipeline design.
+Existing empirical studies have identified anti-patterns for individual tools --- Travis
+CI~\cite{gallaba2020}, GitLab CI~\cite{vassallo2020b}, GitHub Actions~\cite{kinsman2021} but
+these findings remain specific to individual platforms and have not yet been consolidated
+into a unified, cross-platform perspective on CI pipeline quality.
+
+\paragraph{Scope:}
+This research focuses on the design, architecture, and configuration management of
+complex CI pipelines in open-source software projects, specifically on the three
+most widely-used CI platforms: Travis CI, GitLab CI/CD, and GitHub Actions.
+Using the PICOT framework to delimit the research:
+
+\begin{itemize}
+    \item \textbf{Population (P):} open-source software projects hosted on GitHub
+          or GitLab that use Travis CI, GitLab CI, or GitHub Actions as their primary
+          CI platform, and that have been continuously active (at least one pipeline
+          execution per month) over the period 2018--2024.
+
+    \item \textbf{Intervention (I):} systematic analysis of CI configuration files
+          using existing anti-pattern catalogues and automated detection tools
+          (Gretel~\cite{gallaba2020}, CI-Odor~\cite{vassallo2019}, CD-Linter~\cite{vassallo2020b}),
+          combined with a manual labelling step to establish a ground truth.
+
+    \item \textbf{Comparison (C):} comparison of anti-pattern prevalence rates across
+          the three CI platforms and comparison of detection tool performance
+          (precision, recall, coverage) against the manually labelled ground truth.
+
+    \item \textbf{Outcome (O):} a cross-platform ranked catalogue of configuration
+          anti-patterns and smells, a benchmarked assessment of each tool's detection
+          capabilities, and an identification of quality issues not covered by any
+          existing tool.
+
+    \item \textbf{Time (T):} CI configuration files and repository histories from the
+          period 2018--2024, covering the emergence and maturation of GitHub Actions
+          (introduced in 2018), ensuring representation of all three platforms in
+          their current form.
+\end{itemize}
+
+The research does not address continuous deployment (CD) aspects beyond CI scope,
+nor human or organisational factors such as team adoption barriers.
+
+\paragraph{Objectives:} 
+This research pursues three specific objectives. First, it aims to identify and rank
+the most prevalent configuration anti-patterns and smells across Travis CI, GitLab
+CI, and GitHub Actions, extending platform-specific catalogues into a unified
+cross-platform view. Second, it aims to evaluate how well existing automated
+detection tools (Gretel, CI-Odor, CD-Linter) cover the identified anti-patterns,
+measuring their precision, recall, and coverage gaps. Third, it aims to identify
+categories of configuration quality issues that remain unaddressed by current tooling,
+thereby guiding future tool development. In terms of knowledge gain, the expected
+empirical contribution is a benchmarked comparison of tool effectiveness on a
+manually labelled dataset; the expected theoretical contribution is a cross-platform
+anti-pattern taxonomy that consolidates and extends prior single-platform catalogues.
+These contributions are of practical relevance to CI tool developers and DevOps
+engineers seeking to improve pipeline quality assessment, and of societal relevance
+in so far as more reliable CI pipelines directly translate to more reliable software
+delivered to end-users.
+
+\paragraph{State-of-the-art positioning:}
+As detailed in Section~3, the existing literature has produced single-platform
+anti-pattern catalogues~\cite{gallaba2020, vassallo2020b, kinsman2021} and individual
+tool evaluations~\cite{gallaba2020, vassallo2019, vassallo2020b}, but no study has
+evaluated the three major detection tools side-by-side against a common benchmark.
+This research fills that gap by adopting a cross-platform, tool-comparative methodology.
+
+\paragraph{Research method overview:}
+We follow an empirical research strategy combining large-scale repository mining (to
+establish a cross-platform anti-pattern inventory) with a controlled benchmarking
+evaluation (to assess tool performance). The mining protocol draws on the methodology
+of Gallaba and McIntosh~\cite{gallaba2020} and Vassallo et al.~\cite{vassallo2020b},
+while the benchmarking approach follows principles from controlled empirical studies
+in software engineering~\cite{kinsman2021}.
+
+% ──────────────────────────────────────────────────────────────
+\section{Background}
+% ──────────────────────────────────────────────────────────────
+
+This section introduces the key concepts required to understand the scope and
+methodology of this research.
+
+\subsection{Continuous Integration Pipelines}
+
+Continuous Integration is the practice of automatically building and testing software
+each time a developer pushes changes to a version control repository~\cite{kinsman2021}.
+A CI pipeline is the set of automated steps that implement this practice, typically
+including dependency management, compilation, testing, static analysis, and artefact
+generation. Modern CI tools --- Travis CI, GitLab CI/CD, GitHub Actions, and CircleCI encode
+these steps in declarative configuration files (e.g., \texttt{.travis.yml},
+\texttt{.gitlab-ci.yml}, or GitHub Actions YAML workflows)~\cite{bozhkov2024, gallaba2020}.
+As projects scale, these files grow in complexity: they may involve matrix builds
+across multiple language versions and operating systems, conditional job execution,
+caching strategies, and integrations with external services. St{\aa}hl and Bosch~\cite{stahl2014}
+proposed a descriptive model capturing the key variation points in CI practices integration
+scope, trigger mechanisms, and build frequency providing a useful vocabulary for
+reasoning about pipeline design diversity across industrial contexts.
+
+\subsection{Configuration as Code}
+
+Configuration as Code (CaC) is the practice of managing CI pipeline definitions in
+version-controlled text files, with the same rigour applied to production source
+code~\cite{layman2022}. This approach enables reproducibility, auditability, and
+collaborative review of pipeline configurations and, crucially, it makes
+configurations amenable to static analysis by automated tools. Nonetheless, Nejati
+et al.~\cite{nejati2023} showed that build system specifications are reviewed at
+roughly half the frequency of production code, yet review comments are more likely
+to identify defects. This suggests that pipeline configurations are under-scrutinised
+despite their critical role, reinforcing the need for automated quality assessment.
+
+\subsection{Configuration Anti-Patterns and Smells}
+
+By analogy with code smells in traditional software engineering, configuration smells
+are suboptimal patterns in pipeline configuration files that may indicate deeper
+design problems~\cite{gallaba2020}. Gallaba and McIntosh~\cite{gallaba2020} identified
+four categories of anti-patterns in Travis CI specifications, finding that nearly half
+of all configuration code is devoted to environment setup rather than core
+build-and-test logic. Vassallo et al.~\cite{vassallo2020b} defined four types of
+configuration smells in GitLab CD pipelines and implemented CD-Linter, achieving 87\%
+precision and 94\% recall over 5,312 projects. Zampetti et al.~\cite{zampetti2020}
+compiled the most exhaustive taxonomy to date --- 79 bad practices grouped into seven
+categories --- based on developer interviews, Stack Overflow analysis, and surveys.
+These studies collectively demonstrate that configuration quality issues are pervasive,
+diverse, and platform-dependent.
+
+\subsection{Automated Detection Tools}
+
+Several tools have been proposed to detect quality issues in CI configurations
+automatically. Gretel, introduced by Gallaba and McIntosh~\cite{gallaba2020}, detects
+anti-patterns in Travis CI configuration files. CI-Odor, proposed by Vassallo et
+al.~\cite{vassallo2019}, operates at a different level of abstraction: rather than
+analysing configuration files directly, it identifies four process-level anti-patterns
+(Slow Build, Broken Release, Late Merging, and Missing Build Failure Repair) by mining
+build logs and repository metadata. This distinction is important for our benchmarking
+protocol, as CI-Odor's detection targets differ in nature from those of Gretel and
+CD-Linter. CD-Linter~\cite{vassallo2020b} targets configuration smells in GitLab
+pipeline YAML files. While each tool has shown promising results on its target
+platform, it remains unknown whether their detection capabilities generalise across
+CI systems and whether important categories of design issues remain
+unaddressed---the central gap this research addresses.
+
+\subsection{Build Failures and Pipeline Quality Consequences}
+
+A body of empirical research documents the consequences of poor pipeline design.
+Rausch et al.~\cite{rausch2017} analysed 4,021 Travis CI builds across 30 Java
+projects, categorising failure causes into compilation errors, test failures, and
+environment issues. Beller et al.~\cite{beller2017} showed that most build breaks
+are caused by test failures rather than compilation errors, and that overnight
+failures take significantly longer to fix. Vassallo et al.~\cite{vassallo2017}
+compared build failure patterns across open-source and financial-sector contexts,
+revealing domain-specific failure categories. These findings motivate the need for
+early, automated detection of configuration quality issues.
+
+% ──────────────────────────────────────────────────────────────
+\section{Related Work}
+% ──────────────────────────────────────────────────────────────
+
+Our research sits at the intersection of empirical studies on CI configuration quality
+and tool-based research on automated pipeline analysis. We position our work explicitly
+with respect to the most relevant related research.
+
+\subsection{Same Problem, Complementary Approaches (Single-Platform Studies)}
+
+Several studies have investigated configuration quality issues in CI pipelines, but
+each has focused on a single platform. Gallaba and McIntosh~\cite{gallaba2020} studied
+anti-patterns exclusively in Travis CI, identifying four anti-pattern categories in
+9,312 projects and proposing the Gretel detection tool. Vassallo et al.~\cite{vassallo2020b}
+targeted GitLab CI/CD, defining four configuration smell types and implementing
+CD-Linter. Kinsman et al.~\cite{kinsman2021} provided the first empirical
+characterisation of GitHub Actions workflows but did not specifically analyse
+configuration quality. Our research differs from all three by adopting a cross-platform
+perspective, comparing anti-pattern prevalence across Travis CI, GitLab CI, and GitHub
+Actions to identify platform-specific versus universal design issues. This cross-platform
+synthesis is the primary novelty of our contribution relative to this body of work.
+
+Table~\ref{tab:related} summarises how the most directly related studies compare to
+our work along the dimensions that define our novelty.
+
+\begin{table}[h]
+\centering
+\caption{Comparison of related studies on CI configuration quality.}
+\label{tab:related}
+\footnotesize
+\begin{tabular}{p{3.2cm}p{2.8cm}p{2.4cm}p{3.6cm}p{1.4cm}}
+\toprule
+\textbf{Study} & \textbf{Platform(s)} & \textbf{Anti-patterns} & \textbf{Tool evaluated} & \textbf{Cross-platform?} \\
+\midrule
+Gallaba \& McIntosh~\cite{gallaba2020}   & Travis CI         & 4 categories    & Gretel                    & No      \\
+Vassallo et al.~\cite{vassallo2020b}     & GitLab CI         & 4 smell types   & CD-Linter                 & No      \\
+Vassallo et al.~\cite{vassallo2019}      & Platform-agnostic & 4 process-level & CI-Odor                   & Partial \\
+Kinsman et al.~\cite{kinsman2021}        & GitHub Actions    & General workflows & None                    & No      \\
+Zampetti et al.~\cite{zampetti2020}      & Multiple (survey) & 79 practices    & None                      & Partial \\
+\textbf{This work}                       & \textbf{Travis, GitLab, GHA} & \textbf{79+ practices} & \textbf{Gretel, CI-Odor, CD-Linter} & \textbf{Yes} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Same Problem, Same Approach, Different Goal (Evolutionary Studies)}
+
+Zampetti et al.~\cite{zampetti2021} conducted both qualitative and quantitative
+analyses of pipeline evolution, producing a taxonomy of 34 restructuring operations
+across 4,644 Travis CI projects. Their goal was to understand how pipelines change
+over time, whereas our goal is to evaluate how well existing tools detect the quality
+issues that motivate such changes. Similarly, Rausch et al.~\cite{rausch2017} and
+Vassallo et al.~\cite{vassallo2017} studied build failure causes in Java projects
+and across open-source versus financial-sector contexts, respectively. These studies
+provide empirical evidence of the consequences of poor pipeline design but do not
+assess detection tooling --- which is our central concern. The comprehensive bad-practice
+taxonomy of Zampetti et al.~\cite{zampetti2020} serves as a reference catalogue for
+our gap analysis, rather than as a direct comparative object.
+
+\subsection{Similar Approach, Broader Problem (Systematic Reviews)}
+
+Shahin et al.~\cite{shahin2017a} and Laukkanen et al.~\cite{laukkanen2017} produced
+systematic literature reviews covering the full CI/CD landscape, including challenges,
+tools, and practices. Our research is narrower in scope focusing specifically on
+configuration-level quality but deeper in its evaluation of automated detection
+tools. Shahin et al.~\cite{shahin2019} further examined architectural decisions
+supporting CD pipelines through practitioner interviews, complementing our
+configuration-centric analysis. Saleh et al.~\cite{saleh2024} reviewed CI/CD for
+secure cloud computing, providing additional architectural context. These reviews
+inform our background section but are not direct comparators for our empirical
+contribution.
+
+\subsection{Operational and Evolutionary Perspectives}
+
+Gallaba et al.~\cite{gallaba2022} analysed eight years of CircleCI operational data
+to study scalability trends, revealing how pipeline design decisions accumulate into
+long-term performance consequences. Widder et al.~\cite{widder2018} investigated why
+projects abandon Travis CI, identifying build duration and programming language as
+significant predictors motivating the need for portable, tool-agnostic pipeline
+quality assessment. These operational studies contextualise the long-term consequences
+of the configuration quality issues our research aims to detect early. Zampetti et
+al.~\cite{zampetti2017b} examined how open-source projects integrate static analysis
+tools into CI pipelines, directly informing our understanding of quality-gate
+governance in complex pipelines.
+
+% ──────────────────────────────────────────────────────────────
+\section{Research Question(s)}
+% ──────────────────────────────────────────────────────────────
+
+Based on the gaps identified in the state of the art, we formulate the following
+main research question:
+
+\bigskip
+\noindent\textbf{RQ\quad} \textit{To what extent do existing automated tools detect
+configuration anti-patterns and smells in complex CI pipelines across different CI
+platforms?}
+\bigskip
+
+This question is motivated by the observation that current detection tools
+(Gretel~\cite{gallaba2020}, CI-Odor~\cite{vassallo2019}, CD-Linter~\cite{vassallo2020b})
+have each been designed and evaluated for a single CI platform, targeting a subset
+of known anti-patterns. Whether their coverage is representative of the full spectrum
+of configuration quality issues, and whether their detection capabilities transfer to
+other platforms, remains unknown. Answering this question contributes both a
+comparative evaluation of tool effectiveness and an identification of under-addressed
+quality concerns. The question satisfies the FINER criteria: it is \emph{Feasible}
+(relies on publicly available open-source repositories and existing tools),
+\emph{Interesting} (no prior cross-platform comparison exists), \emph{Novel} (extends
+single-platform catalogues), \emph{Ethical} (uses only public data), and
+\emph{Relevant} (directly informs CI tool development and DevOps practice).
+
+We decompose the main research question into three sub-research questions:
+
+\paragraph{RQ.1}
+\textit{What configuration anti-patterns and smells are most prevalent in CI pipelines
+across Travis CI, GitLab CI, and GitHub Actions, and do their frequency and severity
+differ by platform?}
+
+This sub-question targets open-source projects active between 2018 and 2024 across
+Travis CI, GitLab CI, and GitHub Actions. Through systematic mining and manual
+labelling based on established anti-pattern definitions~\cite{gallaba2020, vassallo2020b, zampetti2020},
+we aim to produce a ranked catalogue of anti-patterns by frequency and severity,
+stratified by platform. This extends the single-platform catalogues of Gallaba and
+McIntosh~\cite{gallaba2020}, Vassallo et al.~\cite{vassallo2020b}, and Kinsman et
+al.~\cite{kinsman2021} by enabling direct cross-platform comparisons.
+
+\paragraph{RQ.2}
+\textit{How do existing automated detection tools (Gretel, CI-Odor, CD-Linter)
+compare in terms of precision, recall, and coverage of the identified anti-patterns?}
+
+This sub-question evaluates the detection capabilities of Gretel, CI-Odor, and
+CD-Linter by applying each tool to the manually labelled ground-truth dataset
+constructed for RQ.1 and measuring precision, recall, and F1-score per tool and per
+anti-pattern category. While each tool has been individually validated on its target
+platform~\cite{gallaba2020, vassallo2019, vassallo2020b}, no study has compared them
+side-by-side on a common benchmark which is the central contribution of this
+sub-question.
+
+\paragraph{RQ.3}
+\textit{What categories of CI pipeline configuration quality issues are not addressed
+by any existing automated detection tool?}
+
+This sub-question identifies the gaps left by current tooling by comparing the
+cross-platform inventory from RQ.1 with the coverage results from RQ.2. Using the
+taxonomy of Zampetti et al.~\cite{zampetti2020} (79 bad practices in 7 categories)
+and the restructuring operations catalogued by Zampetti et al.~\cite{zampetti2021}
+as references, we pinpoint which categories of configuration problems currently escape
+automated detection. The expected outcome is a prioritised list of unaddressed quality
+concerns to guide future tool development.
+
+% ──────────────────────────────────────────────────────────────
+\section{Evaluation Protocol}
+% ──────────────────────────────────────────────────────────────
+
+This section describes the evaluation protocol in sufficient detail for an independent
+researcher to replicate it without making additional design decisions.
+
+\subsection{Dataset Construction (for RQ.1 and RQ.2)}
+
+\subsubsection{Repository Selection}
+
+We will collect open-source repositories from GitHub and GitLab using the GitHub REST
+API and the GitLab API. Repositories must satisfy all of the following inclusion
+criteria:
+
+\begin{itemize}
+    \item The repository uses Travis CI (\texttt{.travis.yml} present), GitLab CI
+          (\texttt{.gitlab-ci.yml} present), or GitHub Actions
+          (\texttt{.github/workflows/} directory present) as its primary CI platform.
+
+    \item The repository has been continuously active defined as at least one CI
+          pipeline execution per month from January 2018 to December 2024.
+
+    \item The repository has at least 100 stars on GitHub (or 50 on GitLab), as a
+          proxy for project maturity and non-triviality.
+
+    \item The repository is not a fork of another included repository.
+
+    \item The primary language is one of: Java, Python, JavaScript, Ruby, or Go (to
+          control for language-specific build patterns).
+\end{itemize}
+
+We target a stratified sample of 50 repositories per platform (150 total), stratified
+by primary language (10 per language per platform). This sample size balances the
+feasibility constraints of manual labelling with the need for statistical
+representativeness. If fewer than 40 repositories satisfy all criteria for a given
+stratum, we include all qualifying repositories. The sampling will use the GHTorrent
+dataset~\cite{gousios2013} as a starting point, supplemented by direct API queries
+for repositories created after the GHTorrent snapshot.
+
+To validate the automated filtering, two team members will independently inspect a
+random sample of 30 repositories drawn from the filtered results and confirm that each
+genuinely satisfies all inclusion criteria. Any repository for which the two reviewers
+disagree will be excluded by default. This manual check also serves to detect edge
+cases in which the presence of a CI configuration file does not reflect active use
+of that platform (e.g., disabled or empty workflows).
+
+\subsubsection{Data Extraction}
+
+For each repository, we will extract: (1) all CI configuration files, (2) the full
+Git history of those configuration files, and (3) basic project metadata (number of
+contributors, language, age, number of CI runs). Configuration files will be extracted
+at three time points: January 2019, January 2022, and December 2024, capturing early,
+middle, and current pipeline designs.
+
+Before analysis, all extracted configuration files will undergo the following
+preprocessing steps. First, files that cannot be parsed as valid YAML will be
+flagged and excluded from the benchmarking sub-sample, though they will be counted
+in the dataset to avoid inflating quality metrics. Second, duplicate files ---
+defined as files with identical content appearing at multiple time points for the
+same repository --- will be deduplicated, retaining only the most recent version
+for the labelling step to avoid inflated anti-pattern counts. Third, all files will
+be normalised to UTF-8 encoding and Unix line endings prior to tool execution, to
+ensure consistent behaviour across the three detection tools. These steps will be
+fully scripted and included in the replication package (Section~5.5).
+
+\subsubsection{Manual Labelling (Ground Truth)}
+
+To evaluate tool performance (RQ.2), we will construct a ground-truth dataset by
+manually labelling a stratified sub-sample of 60 configuration files (20 per platform).
+This sample size is consistent with prior manual annotation studies in CI research:
+Vassallo et al.~\cite{vassallo2020b} manually validated a comparable set of files
+when evaluating CD-Linter, and Gallaba and McIntosh~\cite{gallaba2020} used similar
+manual inspection to validate Gretel's outputs. Given the exploratory nature of this
+benchmarking study, which prioritises cross-platform breadth over statistical depth,
+we acknowledge the limited size as a boundary condition and report effect sizes
+alongside all statistical tests to compensate for reduced power.
+
+Three team members will independently label each file using the anti-pattern catalogue
+of Gallaba and McIntosh~\cite{gallaba2020}, Vassallo et al.~\cite{vassallo2020b},
+and Zampetti et al.~\cite{zampetti2020} as reference. We acknowledge that the
+labellers are also the study designers, which introduces a potential confirmation bias.
+We mitigate this through three complementary measures: (1) blind labelling, where
+each annotator works independently without knowledge of others' judgements; (2) the
+use of a structured binary checklist derived directly from the published anti-pattern
+definitions, reducing interpretive freedom to yes/no decisions per anti-pattern per
+line; and (3) an audit of a randomly drawn subset of ten files by a fourth reviewer
+not involved in the study design, whose agreement with the majority label will be
+reported as an additional reliability indicator.
+Each label records: anti-pattern type, location (line number), and severity
+(minor/moderate/severe). Inter-rater agreement will be measured using Cohen's Kappa;
+disagreements will be resolved by majority vote after discussion. We consider
+$\kappa \geq 0.70$ as acceptable agreement.
+
+\subsection{Anti-Pattern Inventory (RQ.1)}
+
+On the full 150-repository dataset, we will apply existing anti-pattern definitions
+from~\cite{gallaba2020, vassallo2020b, zampetti2020} to automatically identify
+occurrences of known patterns where tool support exists, and manually annotate the
+sub-sample for patterns without automated support. For each anti-pattern, we will
+compute: (1) prevalence rate (percentage of repositories exhibiting it), (2) frequency
+per file (mean occurrences per configuration file), and (3) platform distribution. We
+will report descriptive statistics (median, IQR, minimum, maximum) and use
+Mann--Whitney U tests (significance level $\alpha = 0.05$, Bonferroni-corrected for
+multiple comparisons) to assess whether prevalence rates differ significantly between
+platforms. Prior to applying these tests, we will verify that the two required
+assumptions hold: that the data are at least ordinal, and that observations are
+independent across platforms (satisfied by design, since each repository belongs to
+exactly one platform stratum).
+
+\subsection{Tool Benchmarking (RQ.2)}
+
+We will apply Gretel and CD-Linter to the ground-truth sub-sample for
+configuration-level detection. Since CI-Odor operates at the process level (mining
+build logs and repository metadata rather than analysing configuration files directly),
+it is fundamentally incommensurable with Gretel and CD-Linter on precision and recall
+metrics defined over configuration-file annotations. CI-Odor will therefore be
+evaluated separately using build history data from the same repositories, and its
+results presented in a dedicated subsection with qualitative discussion; they will
+\emph{not} be merged into the precision/recall/F1 comparison table used for Gretel
+and CD-Linter. For Gretel and CD-Linter, we will measure:
+
+\begin{itemize}
+    \item \textbf{Precision:} proportion of tool-flagged instances that correspond to
+          a true anti-pattern in the ground truth.
+
+    \item \textbf{Recall:} proportion of ground-truth anti-pattern instances that are
+          flagged by the tool.
+
+    \item \textbf{F1-score:} harmonic mean of precision and recall.
+
+    \item \textbf{Coverage:} proportion of anti-pattern categories (from the Zampetti
+          et al.~\cite{zampetti2020} taxonomy) for which the tool flags at least one
+          instance.
+\end{itemize}
+
+Results will be reported both aggregated (overall precision/recall/F1) and per
+anti-pattern category. Note that Gretel targets Travis CI exclusively, CD-Linter
+targets GitLab CI exclusively, and CI-Odor is platform-agnostic; we will therefore
+apply each tool only to the configurations of its target platform when measuring
+precision and recall, but measure coverage across all platforms.
+
+\subsection{Gap Analysis (RQ.3)}
+
+We will construct a coverage matrix mapping each of the 79 bad practices from Zampetti
+et al.~\cite{zampetti2020} and the 34 restructuring operations from Zampetti et
+al.~\cite{zampetti2021} to the detection tools. A category is considered ``covered''
+if at least one of the three tools achieves recall $\geq 0.50$ for instances of that
+category in the ground truth. This threshold follows the convention used by Vassallo
+et al.~\cite{vassallo2020b}, who considered detection rates above 50\% as indicative
+of meaningful coverage. Categories below this threshold, or absent from tool output
+entirely, are classified as ``gaps''. We will prioritise the gap list by: (1)
+prevalence in the RQ.1 dataset, (2) severity ratings from the manual labelling, and
+(3) theoretical impact based on the literature (e.g., build failure
+likelihood~\cite{rausch2017, vassallo2017}).
+
+\subsection{Replication Package}
+
+All scripts, sampled repository lists, manual labelling guidelines, labelled
+ground-truth data, and raw tool outputs will be made publicly available on a dedicated
+Zenodo archive upon completion of the study, to ensure full replicability.
+
+\subsection{Threats to Validity}
+
+\paragraph{Internal Validity.}
+Subjectivity in manual labelling is the primary internal threat. We mitigate this by
+using three independent raters and measuring inter-rater agreement with Cohen's Kappa,
+resolving disagreements through discussion. To further reduce confirmation bias
+arising from labellers also being study designers, we apply a structured binary
+checklist derived from published anti-pattern definitions~\cite{gallaba2020, vassallo2020b, zampetti2020}
+that limits interpretive freedom, and we include an audit by a fourth reviewer
+external to the study design (see Section~5.1.3). Another threat is the possible
+misapplication of a tool outside its intended platform; we mitigate this by applying
+each tool only to its target platform for performance measurement (Section~5.3).
+
+\paragraph{Construct Validity.}
+We operationalise ``anti-pattern prevalence'' as the percentage of repositories
+exhibiting an instance, which may not capture severity. We address this by also
+reporting frequency per file and severity ratings. Precision and recall measure tool
+performance against a human-labelled ground truth, which itself may be incomplete; we
+mitigate this by using three raters and published taxonomies. The star threshold (100
+stars) as a proxy for project maturity may exclude relevant smaller projects; we
+acknowledge this as a boundary condition of our sampling strategy.
+
+\paragraph{External Validity.}
+The sample is limited to five programming languages and three CI platforms, and to
+open-source repositories. Results may not generalise to proprietary CI systems or to
+languages not included. The restriction to 2018--2024 may also limit applicability
+to earlier or future pipeline configurations. We partially mitigate these threats by
+including the three most widely-used CI platforms~\cite{gallaba2020, kinsman2021, vassallo2020b}
+and by stratifying across languages. We explicitly report the scope constraints and
+encourage replication in industrial settings.
+
+\paragraph{Reliability.}
+All tools (Gretel, CI-Odor, CD-Linter) are open-source and their versions will be
+fixed and archived in the replication package. API queries for repository selection
+will be scripted and logged. The full replication package (Section~5.5) enables
+independent verification of all steps.
+
+\paragraph{Conclusion Validity.}
+With a ground-truth dataset of 60 configuration files (20 per platform), the
+statistical power of pairwise comparisons may be limited. We mitigate this by
+reporting effect sizes alongside $p$-values and by using non-parametric tests
+appropriate for small samples. We acknowledge that Bonferroni correction increases
+the risk of Type II errors at this sample size.
+
+% ──────────────────────────────────────────────────────────────
+\begin{thebibliography}{99}
+% ──────────────────────────────────────────────────────────────
+
+\bibitem{beller2017}
+M.~Beller, G.~Gousios, and A.~Zaidman.
+``Oops, my tests broke the build: An explorative analysis of Travis CI with GitHub.''
+In \emph{Proc. 14th IEEE/ACM Int. Conf. on Mining Software Repositories (MSR)},
+pp.~356--367. IEEE, 2017.
+
+\bibitem{bozhkov2024}
+D.~Bozhkov et al.
+``Configuration tool for CI/CD pipelines and React web apps.''
+In \emph{2024 14th Int. Conf. on Advanced Computer Information Technologies (ACIT)}.
+IEEE, 2024.
+
+\bibitem{dutta2025}
+S.~Dutta et al.
+``CI/CD pipeline optimization using AI: A systematic mapping study.''
+\emph{MDPI Applied Sciences}, 2025.
+
+\bibitem{gallaba2022}
+K.~Gallaba, M.~Lamothe, and S.~McIntosh.
+``Lessons from eight years of operational data from a continuous integration service:
+An exploratory case study of CircleCI.''
+In \emph{Proc. 44th IEEE/ACM Int. Conf. on Software Engineering (ICSE)},
+pp.~1330--1342. ACM, 2022.
+
+\bibitem{gallaba2020}
+K.~Gallaba and S.~McIntosh.
+``Use and misuse of continuous integration features: An empirical study of projects
+that (mis)use Travis CI.''
+\emph{IEEE Trans. on Software Engineering}, 46(1):33--50, 2020.
+
+\bibitem{hilton2016}
+M.~Hilton, T.~Tunnell, K.~Huang, D.~Marinov, and D.~Dig.
+``Usage, costs, and benefits of continuous integration in open-source projects.''
+In \emph{Proc. 31st IEEE/ACM Int. Conf. on Automated Software Engineering (ASE)},
+pp.~426--437. ACM, 2016.
+
+\bibitem{kinsman2021}
+T.~Kinsman, M.~Wessel, M.A.~Gerosa, and C.~Treude.
+``How do software developers use GitHub Actions to automate their workflows?''
+In \emph{Proc. 18th IEEE/ACM Int. Conf. on Mining Software Repositories (MSR)},
+pp.~420--431. IEEE, 2021.
+
+\bibitem{laukkanen2017}
+M.~Laukkanen, J.~Itkonen, and C.~Lassenius.
+``Problems, causes and solutions when adopting continuous delivery: A systematic
+literature review.''
+\emph{Information and Software Technology}, 82:55--79, 2017.
+
+\bibitem{layman2022}
+L.~Layman et al.
+``Method for continuous integration and deployment using a pipeline generator for
+agile software projects.''
+\emph{Sensors (MDPI)}, 22(12):4637, 2022.
+
+\bibitem{nejati2023}
+M.~Nejati, M.~Alfadel, and S.~McIntosh.
+``Code review of build system specifications: Prevalence, purposes, patterns, and
+perceptions.''
+In \emph{Proc. 45th IEEE/ACM Int. Conf. on Software Engineering (ICSE)},
+pp.~1213--1224. IEEE, 2023.
+
+\bibitem{rausch2017}
+T.~Rausch, W.~Hummer, P.~Leitner, and S.~Schulte.
+``An empirical analysis of build failures in the continuous integration workflows of
+Java-based open-source software.''
+In \emph{Proc. 14th Int. Conf. on Mining Software Repositories (MSR)},
+pp.~345--355. IEEE, 2017.
+
+\bibitem{saleh2024}
+S.M.~Saleh, N.H.~Madhavji, and J.~Steinbacher.
+``A systematic literature review on continuous integration and deployment (CI/CD) for
+secure cloud computing.''
+In \emph{Proc. 20th Int. Conf. on Web Information Systems and Technologies (WEBIST)}.
+SciTePress, 2024.
+
+\bibitem{shahin2017a}
+M.~Shahin, M.A.~Babar, and L.~Zhu.
+``Continuous integration, delivery and deployment: A systematic review on approaches,
+tools, challenges and practices.''
+\emph{IEEE Access}, 5:1920--1938, 2017.
+
+\bibitem{shahin2019}
+M.~Shahin, M.~Zahedi, M.A.~Babar, and L.~Zhu.
+``An empirical study of architecting for continuous delivery and deployment.''
+\emph{Empirical Software Engineering}, 24(3):1061--1108, 2019.
+
+\bibitem{stahl2014}
+D.~St{\aa}hl and J.~Bosch.
+``Modeling continuous integration practice differences in industry software
+development.''
+\emph{Journal of Systems and Software}, 87:48--59, 2014.
+
+\bibitem{vassallo2019}
+C.~Vassallo, S.~Proksch, H.C.~Gall, and M.~Di~Penta.
+``Automated reporting of anti-patterns and decay in continuous integration.''
+In \emph{Proc. 41st IEEE/ACM Int. Conf. on Software Engineering (ICSE)},
+pp.~105--115. IEEE, 2019.
+
+\bibitem{vassallo2020b}
+C.~Vassallo, S.~Proksch, A.~Jancso, H.C.~Gall, and M.~Di~Penta.
+``Configuration smells in continuous delivery pipelines: A linter and a six-month
+study on GitLab.''
+In \emph{Proc. 28th ACM Joint European Software Engineering Conf. and Symposium on
+the Foundations of Software Engineering (ESEC/FSE)}, pp.~327--337. ACM, 2020.
+
+\bibitem{vassallo2017}
+C.~Vassallo et al.
+``A tale of CI build failures: An open source and financial sector analysis.''
+In \emph{Proc. 33rd IEEE Int. Conf. on Software Maintenance and Evolution (ICSME)},
+pp.~183--193. IEEE, 2017.
+
+\bibitem{widder2018}
+D.~Widder, B.~Vasilescu, M.~Hilton, and C.~K{\"a}stner.
+``I'm leaving you, Travis: A continuous integration breakup story.''
+In \emph{Proc. 15th Int. Conf. on Mining Software Repositories (MSR)},
+pp.~165--169. IEEE, 2018.
+
+\bibitem{zampetti2019}
+F.~Zampetti et al.
+``Detecting architectural issues during the continuous integration pipeline.''
+In \emph{2019 ACM/IEEE 22nd Int. Conf. on Model Driven Engineering Languages and
+Systems Companion (MODELS-C)}. IEEE, 2019.
+
+\bibitem{zampetti2021}
+F.~Zampetti, S.~Geremia, G.~Bavota, and M.~Di~Penta.
+``CI/CD pipelines evolution and restructuring: A qualitative and quantitative study.''
+In \emph{Proc. 37th IEEE Int. Conf. on Software Maintenance and Evolution (ICSME)},
+pp.~471--482. IEEE, 2021.
+
+\bibitem{zampetti2017b}
+F.~Zampetti, S.~Scalabrino, R.~Oliveto, G.~Canfora, and M.~Di~Penta.
+``How open source projects use static code analysis tools in continuous integration
+pipelines.''
+In \emph{Proc. 14th Int. Conf. on Mining Software Repositories (MSR)},
+pp.~334--344. IEEE, 2017.
+
+\bibitem{zampetti2020}
+F.~Zampetti, C.~Vassallo, S.~Panichella, G.~Canfora, H.C.~Gall, and M.~Di~Penta.
+``An empirical characterization of bad practices in continuous integration.''
+\emph{Empirical Software Engineering}, 25(2):1095--1135, 2020.
+
+\bibitem{zhao2017}
+Y.~Zhao, A.~Serebrenik, Y.~Zhou, V.~Filkov, and B.~Vasilescu.
+``The impact of continuous integration on other software development practices:
+A large-scale empirical study.''
+In \emph{Proc. 32nd IEEE/ACM Int. Conf. on Automated Software Engineering (ASE)},
+pp.~60--71. IEEE, 2017.
+
+\bibitem{gousios2013}
+G.~Gousios.
+``The GHTorrent dataset and tool suite.''
+In \emph{Proc. 10th Working Conference on Mining Software Repositories (MSR)},
+pp.~233--236. IEEE, 2013.
+
+\end{thebibliography}
+
+% ──────────────────────────────────────────────────────────────
+\newpage
+\section*{Response to Peer Review}
+% ──────────────────────────────────────────────────────────────
+ 
+The table below summarises how the main remarks from reviews 96A, 96B, and 96C have
+been addressed in this revised version.
+ 
+\smallskip
+\noindent
+\footnotesize
+\begin{tabular}{p{0.22\textwidth}p{0.18\textwidth}p{0.52\textwidth}}
+\toprule
+\textbf{Remark} & \textbf{Source} & \textbf{Action taken} \\
+\midrule
+Validation of inclusion/exclusion criteria &
+96A, 96B &
+Added paragraph in \S5.1.1: two team members independently inspect 30 sampled repositories after automated filtering; disagreements lead to exclusion. \\
+\addlinespace
+Data preprocessing steps &
+96B &
+Added paragraph in \S5.1.2 detailing three steps: exclusion of unparseable YAML files, deduplication across time points, and UTF-8/Unix normalisation. \\
+\addlinespace
+Justification of sample size &
+96A, 96C &
+Added justification in \S5.1.3 comparing our 60-file sample to prior studies~\cite{gallaba2020,vassallo2020b}; limited power acknowledged as a boundary condition. \\
+\addlinespace
+Confirmation bias mitigation &
+96C &
+Strengthened \S5.1.3 with two additions: (1) structured binary checklist to limit interpretive freedom; (2) audit of 10 files by a fourth reviewer external to the study. \\
+\addlinespace
+CI-Odor comparability &
+96C &
+Clarified in \S5.3 that CI-Odor results are reported in a dedicated subsection and not merged into the precision/recall/F1 table used for Gretel and CD-Linter. \\
+\addlinespace
+Statistical test assumptions &
+96B &
+Added sentence in \S5.2 stating that both Mann--Whitney U assumptions (ordinal data; platform independence) will be verified before application. \\
+\addlinespace
+Summary table of related work &
+96A, 96C &
+Added Table~1 in \S3.1 comparing prior studies on platform coverage, anti-patterns, tool evaluated, and cross-platform scope. \\
+\addlinespace
+Repetition of novelty claim &
+96C &
+Trimmed the \emph{State-of-the-art positioning} paragraph in \S1; redundant restatements replaced by a forward reference to \S3. \\
+\bottomrule
+\end{tabular}
+ 
+\normalsize
+\smallskip
+\paragraph{Remarks not acted upon.}
+\emph{Adding a pipeline diagram (96C):} the structured subsections of \S5 already
+describe the protocol sequentially; a figure would duplicate rather than clarify.
+\emph{Course structure compliance (96A):} the current structure follows standard
+empirical software engineering registered report conventions, which we consider more
+appropriate for the scientific content; all required course elements remain present.
+ 
+\end{document}
