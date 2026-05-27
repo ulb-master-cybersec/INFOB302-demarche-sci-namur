@@ -58,7 +58,7 @@ maintenance burdens are well-documented consequences of poor pipeline design~\ci
 Despite the widespread adoption of CI in both open-source and industrial contexts,
 there is still no unified, cross-platform understanding of the configuration practices
 and anti-patterns that characterise good versus poor CI pipeline design.
-Existing empirical studies have identified anti-patterns for individual tools Travis
+Existing empirical studies have identified anti-patterns for individual tools --- Travis
 CI~\cite{gallaba2020}, GitLab CI~\cite{vassallo2020b}, GitHub Actions~\cite{kinsman2021} but
 these findings remain specific to individual platforms and have not yet been consolidated
 into a unified, cross-platform perspective on CI pipeline quality.
@@ -143,7 +143,7 @@ Continuous Integration is the practice of automatically building and testing sof
 each time a developer pushes changes to a version control repository~\cite{kinsman2021}.
 A CI pipeline is the set of automated steps that implement this practice, typically
 including dependency management, compilation, testing, static analysis, and artefact
-generation. Modern CI tools Travis CI, GitLab CI/CD, GitHub Actions, and CircleCI encode
+generation. Modern CI tools --- Travis CI, GitLab CI/CD, GitHub Actions, and CircleCI encode
 these steps in declarative configuration files (e.g., \texttt{.travis.yml},
 \texttt{.gitlab-ci.yml}, or GitHub Actions YAML workflows)~\cite{bozhkov2024, gallaba2020}.
 As projects scale, these files grow in complexity: they may involve matrix builds
@@ -175,8 +175,8 @@ of all configuration code is devoted to environment setup rather than core
 build-and-test logic. Vassallo et al.~\cite{vassallo2020b} defined four types of
 configuration smells in GitLab CD pipelines and implemented CD-Linter, achieving 87\%
 precision and 94\% recall over 5,312 projects. Zampetti et al.~\cite{zampetti2020}
-compiled the most exhaustive taxonomy to date 79 bad practices grouped into seven
-categories based on developer interviews, Stack Overflow analysis, and surveys.
+compiled the most exhaustive taxonomy to date --- 79 bad practices grouped into seven
+categories --- based on developer interviews, Stack Overflow analysis, and surveys.
 These studies collectively demonstrate that configuration quality issues are pervasive,
 diverse, and platform-dependent.
 
@@ -262,7 +262,7 @@ issues that motivate such changes. Similarly, Rausch et al.~\cite{rausch2017} an
 Vassallo et al.~\cite{vassallo2017} studied build failure causes in Java projects
 and across open-source versus financial-sector contexts, respectively. These studies
 provide empirical evidence of the consequences of poor pipeline design but do not
-assess detection tooling which is our central concern. The comprehensive bad-practice
+assess detection tooling --- which is our central concern. The comprehensive bad-practice
 taxonomy of Zampetti et al.~\cite{zampetti2020} serves as a reference catalogue for
 our gap analysis, rather than as a direct comparative object.
 
